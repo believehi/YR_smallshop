@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>添加新客户</title>
+		<link href="../../css/public.css" rel="stylesheet" />
+		<link href="kehu.css" rel="stylesheet" />
+
+	</head>
+	<body>
+		<!-- 导航 -->
+		<header class="mui-bar">
+			<img src="../../img/i_fh.png" class="mui-action-back">
+			<b class="mui-title">添加下单客户信息</b>
+		</header>
+		<!-- 客户列表 -->
+		<div class="content">
+			<div class="list">
+				<div>
+					<span>批发客户全称</span>
+					<span><input type="text" name="" id="myName" value="" placeholder="批发客户全称" /></span>
+				</div>
+			</div>
+			<div class="list">
+				<div>
+					<span>客户简称</span>
+					<span><input type="text" name="" id="myAbbr" value="" placeholder="客户简称" /></span>
+				</div>
+			</div>
+			<div class="list">
+				<div>
+					<span>收货联系人</span>
+					<span><input type="text" name="" id="myContact" value="" placeholder="收货联系人" /></span>
+				</div>
+			</div>
+			<div class="list">
+				<div>
+					<span>联系人电话</span>
+					<span><input type="number" name="" id="myPhone" value="" placeholder="联系人电话" /></span>
+				</div>
+			</div>
+			<div class="list">
+				<div>
+					<span>收货地址</span>
+					<span><input type="text" name="" id="myDizhi" value="" placeholder="收货地址" /></span>
+				</div>
+			</div>
+			<div class="list_but" id="kh_return">确&emsp;认</div>
+		</div>
+
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/jquery.js"></script>
+		<script src="../../js/app.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			(function() {
+				mui.init();
+				var w, ws, userinfo;
+				mui.plusReady(function() {
+					ws = plus.webview.currentWebview();
+					ws.setStyle(YiRu.viewstyle());
+					YiRu.UserLogin();
+					userinfo = JSON.parse(localStorage.getItem('$sh_userinfo'));
+					
+					// console.log(localStorage.getItem('$sh_userinfo'))
+					$("#kh_return").on("tap", function() {
+
+						if ($("#myName").val() == '') {
+							mui.toast("请输入批发客户全称")
+							return
+						}
+						if ($("#myAbbr").val() == '') {
+							mui.toast("请输入客户简称")
+							return
+						}
+						if ($("#myAbbr").val().length >= 20) {
+							mui.toast("客户简称不能超过10个字")
+							return
+						}
+						if ($("#myContact").val() == '') {
+							mui.toast("请输入收货联系人")
+							return
+						}
+						if ($("#myPhone").val() == '') {
+							mui.toast("请输入联系人电话")
+							return
+						}
+						if ($("#myDizhi").val() == '') {
+							mui.toast("请输入收货地址")
+							return
+						}
+
+						YiRu.getajax('/cust/addcust', function(data) {
+							// console.log(JSON.stringify(data));
+							if (data.code == 200) {
+								mui.toast("客户添加成功！");
+								mui.back();
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							drpid: userinfo.companyId,
+							name_short: $("#myAbbr").val(),
+							name_full: $("#myName").val(),
+							connecter: $("#myContact").val(),
+							tel: $("#myPhone").val(),
+							email: $("#myDizhi").val()
+						}, w, 'post');
+
+
+
+
+						
+					})
+
+				})
+			}())
+		</script>
+	</body>
+</html>

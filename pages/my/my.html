@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>我的</title>
+		<link href="../../css/public.css" rel="stylesheet" />
+		<link href="my.css" rel="stylesheet" />
+
+	</head>
+	<body>
+		<!-- 头像 -->
+		<div class="title" id="user_title">
+
+		</div>
+		<!-- 我的订单 -->
+		<div class="myDd" id="myDd">
+			<b>我的订单</b>
+			<span class="myDd-on">
+				<span>查看全部订单</span>
+				<img src="../../img/i_xq.png">
+			</span>
+		</div>
+		<!-- 图标 -->
+		<ul class="list">
+			<li id="my_dxd">
+				<img src="../../img/my_01.png">
+				<p>待下单</p>
+				<span></span>
+			</li>
+			<li id="my_yxd">
+				<img src="../../img/my_02.png">
+				<p>已下单</p>
+				<span></span>
+			</li>
+			<li id="my_fh">
+				<img src="../../img/my_03.png">
+				<p>已发货</p>
+				<span></span>
+			</li>
+			<li id="my_sh">
+				<img src="../../img/my_04.png">
+				<p>已收货</p>
+				<span></span>
+			</li>
+			<li id="my_th">
+				<img src="../../img/my_05.png">
+				<p>退货订单</p>
+				<span></span>
+			</li>
+		</ul>
+		<!-- content -->
+		<div class="content">
+			<div id="customer">
+				<span>客户列表</span>
+				<img src="../../img/i_xq.png">
+			</div>
+			<div id="cancel-dd">
+				<span>订单取消</span>
+				<img src="../../img/i_xq.png">
+			</div>
+			<div id="modify">
+				<span>修改密码</span>
+				<img src="../../img/i_xq.png">
+			</div>
+			<div id="signOut">
+				<span>退出登录</span>
+				<img src="../../img/i_xq.png">
+			</div>
+		</div>
+
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/jquery.js"></script>
+		<script src="../../js/app.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			(function() {
+				mui.init();
+				var w, ws, userinfo, baseinfo;
+				mui.plusReady(function() {
+					ws = plus.webview.currentWebview();
+					ws.setStyle(YiRu.viewstyle());
+					// YiRu.UserLogin();
+					userinfo = JSON.parse(localStorage.getItem('$sh_userinfo'));
+					// console.log(localStorage.getItem('$sh_userinfo'))
+					YiRu.isUserinfo(userinfo);
+					// YiRu.UserLogin();
+					
+					if(JSON.stringify(userinfo) == "{}" || userinfo == null) return
+					mydetails()
+					function mydetails() {
+						w = plus.nativeUI.showWaiting('', YiRu.WaitingStyle());
+						YiRu.getajax('user/usercenter', function(data) {
+							var str_a;
+							// console.log(JSON.stringify(data));
+							if (data.code == 200) {
+								baseinfo = data.data.baseinfo;
+								str_a = '<div class="title-img"><img src="' + baseinfo.headurl + '"></div>' +
+												'<p>' + baseinfo.name_full + '</p><p>' + baseinfo.name_short + '</p>';
+								$("#user_title").html(str_a);
+								$("#my_dxd span").html(baseinfo.Porder);
+								$("#my_yxd span").html(baseinfo.Plorder);
+								$("#my_fh span").html(baseinfo.Forder);
+								$("#my_sh span").html(baseinfo.Shorder);
+								$("#my_th span").html(baseinfo.Qorder);
+								
+								if (baseinfo.Porder == 0) {
+									$("#my_dxd span").hide()
+								} else{
+									$("#my_dxd span").show()
+								}
+								if (baseinfo.Plorder == 0) {
+									$("#my_yxd span").hide()
+								} else{
+									$("#my_yxd span").show()
+								}
+								if (baseinfo.Forder == 0) {
+									$("#my_fh span").hide()
+								} else{
+									$("#my_fh span").show()
+								}
+								if (baseinfo.Shorder == 0) {
+									$("#my_sh span").hide()
+								} else{
+									$("#my_sh span").show()
+								}
+								if (baseinfo.Qorder == 0) {
+									$("#my_th span").hide()
+								} else{
+									$("#my_th span").show()
+								}
+								
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							userid: userinfo.userId,
+							drpid: userinfo.companyId
+						}, w, 'post');
+					}
+
+					// 退出登录
+					var btnArray = ['确定退出', '我再想想'];
+					mui("body").on("tap", "#signOut", function() {
+						mui.confirm('确定退出登录！', '', btnArray, function(e) {
+						    if (e.index == 0) {
+									localStorage.removeItem("$sh_userinfo");
+									YiRu.openVW("/pages/login/login.html");
+									setTimeout(function() {									
+										YiRu.closeAllwebview("/pages/login/login.html")
+									}, 100);
+									mui.toast("已退出登录！");
+								}
+						 })
+					})
+					
+					
+					// 刷新页面自定义事件
+					window.addEventListener('refresh', function(e) {
+						mydetails()
+					})
+
+				})
+				// 跳转到客户列表
+				mui("body").on("tap", "#customer", function() {
+					YiRu.openVW("/pages/customer/customer.html")
+				})
+				// 跳转到取消订单
+				mui("body").on("tap", "#cancel-dd", function() {
+					YiRu.openVW("/pages/cancel/cancel.html")
+				})
+				// 跳转到修改密码
+				mui("body").on("tap", "#modify", function() {
+					YiRu.openVW("/pages/login/modify.html")
+				})
+				// 跳转到全部订单
+				mui("body").on("tap", "#myDd", function() {
+					YiRu.openVW("/pages/my/myOrder.html", {
+						title: 0
+					})
+				})
+				// 跳转到待下单
+				mui("body").on("tap", "#my_dxd", function() {
+					YiRu.openVW("/pages/my/myOrder.html", {
+						title: 1
+					})
+				})
+				// 跳转到已下单
+				mui("body").on("tap", "#my_yxd", function() {
+					YiRu.openVW("/pages/my/myOrder.html", {
+						title: 2
+					})
+				})
+				// 跳转到已发货
+				mui("body").on("tap", "#my_fh", function() {
+					YiRu.openVW("/pages/my/myOrder.html", {
+						title: 3
+					})
+				})
+				// 跳转到已收货
+				mui("body").on("tap", "#my_sh", function() {
+					YiRu.openVW("/pages/my/myOrder.html", {
+						title: 4
+					})
+				})
+				// 跳转到退货订单
+				mui("body").on("tap", "#my_th", function() {
+					YiRu.openVW("/pages/my/myOrder.html", {
+						title: 5
+					})
+				})
+			}())
+		</script>
+	</body>
+</html>

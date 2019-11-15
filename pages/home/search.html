@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>购物搜索页面</title>
+		<link href="../../css/mui.min.css" rel="stylesheet" />
+		<link href="../../css/public.css" rel="stylesheet" />
+		<link href="search.css" rel="stylesheet" />
+
+	</head>
+	<body>
+		<header class="title">
+			<div class="mui_fh mui-action-back">
+				<img src="../../img/i_fh.png" >
+			</div>
+			<div class="mui_input">
+				<img src="../../img/i_ss.png" >
+				<input type="" name="" id="mui_input" value="" placeholder="搜索商品名称 / 编号 / 助记符"/>
+				<img src="../../img/i_qx.png" id="mui_qx">
+			</div>
+			<div class="mui_ss" id="ss_shopping">搜索</div>
+		</header>
+		<!-- 商品列表 -->
+		<div id="refreshContainer" class="content">
+			<div class="mui-scroll-wrapper">
+				<ul id="content" class="mui-scroll">
+					
+				</ul>
+			</div>
+		</div>
+		<!-- 历史记录 -->
+		<div class="back"></div>
+		<ul class="record" id="record"></ul>
+
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/jquery.js"></script>
+		<script src="../../js/app.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			(function() {
+				var w, ws, userinfo;
+				var recordArr = [];
+				mui.plusReady(function() {
+					ws = plus.webview.currentWebview();
+					ws.setStyle(YiRu.viewstyle());
+					YiRu.UserLogin();
+					userinfo = JSON.parse(localStorage.getItem('$sh_userinfo'));
+					recordArr = JSON.parse(localStorage.getItem('$history_arr')) || [];
+					
+					var pag = 2,
+						full = '',
+						cid = '',
+						price_min = 0,
+						price_max = 10000000000;
+					// 商品列表
+					function splist(page, name_full, classid, min, max) {
+						YiRu.getajax('shop/shopscreen', function(data) {
+							var shoplist = data.data.shoplist;
+							// console.log(JSON.stringify(shoplist))
+							if (data.code == 200) {
+								var str = '',
+									len = shoplist.length;
+								if (len < 10) {
+									mui('#refreshContainer').pullRefresh().disablePullupToRefresh();
+								}
+								if(len == 0) {
+									str = '<p style="line-height: 100px; color: #888; text-align: center; font-size: 1rem;">暂无您所需的商品</p>'
+									$("#content").html(str);
+									return;
+								}
+								for (var i = 0; i < len; i++) {
+									str += '<li shopid="' + shoplist[i].shopid + '">' +
+														'<div class="list-img">' +
+															'<img src="' + (shoplist[i].path_local || "../../img/default.png") + '">' +
+														'</div>' +
+														'<div class="main">' +
+															'<div class="main-title">' +
+																'<span></span>' +
+																'<span>' + shoplist[i].name_full + '</span>' +
+															'</div>' +
+															'<div class="main-content">' +
+																'<span>规格：' + shoplist[i].standards + 'ml</span>' +
+																'<span>单位：' + shoplist[i].unit_sale + '</span>' +
+																'<span>库存：' + shoplist[i].num + '个</span>' +
+															'</div>' +
+															'<div class="main-content">' +
+																'<span>最大包装：' + shoplist[i].num_box + '</span>' +
+																'<span>最小不可拆包装数：' + shoplist[i].num_pack + '</span>' +
+															'</div>' +
+															'<div class="main-sub">' +
+																'<span>￥' + shoplist[i].price_sale + '</span>' +
+																// '<span>￥' + shoplist[i]. + '</span>' +
+																'<span>已售 ' + shoplist[i].num_sale + ' ' + shoplist[i].unit_sale +'</span>' +
+															'</div>' +
+														'</div>' +
+													'</li>';
+								}
+								if(len < 10 && len > 4) {
+									str += '<p style="line-height: 3rem; color: #888; text-align: center; font-size: 0.875rem;">我是有底线的！</p>'
+								}
+								if (page > 1) {
+									if(len == 0) return
+									$("#content").append(str);
+									pag ++;
+									mui('#refreshContainer').pullRefresh().endPullupToRefresh();
+									return
+								}
+								$("#content").html(str);
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							page: page,
+							pagenum: 10,
+							name_full: name_full,
+							classid: classid,
+							price_from: min,
+							price_to: max,
+							drpid: userinfo.companyId
+						}, w, 'post');
+					}
+					splist(1, full, cid, price_min, price_max);
+					
+					mui.init({
+						pullRefresh : {
+								container: "#refreshContainer",
+								up : {
+									height: 50,//可选.默认50.触发上拉加载拖动距离
+									auto: false,//可选,默认false.自动上拉加载一次
+									contentrefresh : "正在加载...",//可选，正在加载状态时，上拉加载控件上显示的标题内容
+									contentnomore: '没有更多数据了',//可选，请求完毕若没有更多数据时显示的提醒内容；
+									callback: function () {
+										setTimeout(function(){
+											splist(pag, full, cid, price_min, price_max);
+										}, 1000)
+									}
+								}
+							}
+					});	
+					
+					// 跳珠到商品详情
+					mui('body').on('tap', '#content li', function() {
+						YiRu.openVW("/pages/product/product.html", {shopid: $(this).attr("shopid")});
+					})
+					
+					// 点击搜索
+					$("body").on("tap", "#ss_shopping", function () {
+						$(".back").hide()
+						$(".record").hide()
+						full = $("#mui_input").val().replace(/^\s*|\s*$/g,"");
+						splist(1, full, cid, price_min, price_max);
+						pag = 2
+						mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
+						if(full != '') {
+							recordArr.unshift(full);
+							unique(recordArr);
+						};
+						localStorage.setItem('$history_arr', JSON.stringify(recordArr));
+						record()
+					})
+					
+					// 去重
+					function unique(arr) {
+						for (var i = 0; i < arr.length; i++) {
+							for (var j = i + 1; j < arr.length; j++) {
+								if (arr[i] == arr[j]) {
+									arr.splice(j, 1);
+									j--
+								}
+							}
+						}
+						return arr
+					}
+					
+					// 点击历史列表搜索
+					$("body").on("tap", "#record li", function () {
+						$(".back").hide()
+						$(".record").hide()
+						$("#mui_input").val($(this).text());
+						full = $(this).text();
+						splist(1, full, cid, price_min, price_max);
+						mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
+					})
+					
+					// 历史列表
+					function record() {
+						var record_len = recordArr.length;
+						var record_str = '';
+						if(record_len == 0) return;
+						for(var i = 0 ; i < record_len; i ++) {
+							record_str += '<li>' + recordArr[i] + '</li>'
+							if(i >= 10){
+								$("#record").html(record_str);
+								return
+							};
+						}
+						$("#record").html(record_str);
+					}
+					record();
+					
+					// 清除input的值
+					mui("body").on("tap", "#mui_qx", function(){
+						$("#mui_input").val('');
+						full = '';
+						splist(1, full, cid, price_min, price_max);
+						pag = 2
+						mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
+					})
+
+				})
+				// input 聚焦事件
+				$("#mui_input").focus(function() {
+					$(".back").show()
+					$(".record").show()
+				})
+				$("body").on("tap",".back", function() {
+					$(".back").hide()
+					$(".record").hide()
+				})
+			}())
+		</script>
+	</body>
+</html>

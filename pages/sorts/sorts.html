@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>分类</title>
+		<link href="../../css/public.css" rel="stylesheet" />
+		<link href="sorts.css" rel="stylesheet" />
+
+	</head>
+	<body>
+		<!-- 搜索框 -->
+		<div class="title">
+			<div class="search">
+				<img src="../../img/i_ss.png">
+				<input type="" name="" id="ss_input" value="" placeholder="搜索商品名称 / 编号 / 助记符" readOnly='readOnly' />
+				<!-- <img src="../../img/i_sm.png"> -->
+			</div>
+		</div>
+		<!-- 主体 -->
+		<div class="content" id="le-content">
+			<ul class="list" id="list">
+				<!-- 一级分类 -->
+			</ul>
+			<ul class="main" id="main">
+				<!-- 子类 -->
+			</ul>
+		</div>
+
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/jquery.js"></script>
+		<script src="../../js/app.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			(function() {
+				mui.init();
+				var w, ws, userinfo, baseinfo, clowlist;
+				mui.plusReady(function() {
+					ws = plus.webview.currentWebview();
+					ws.setStyle(YiRu.viewstyle());
+					userinfo = JSON.parse(localStorage.getItem('$sh_userinfo'));
+					// console.log(localStorage.getItem('$sh_userinfo'));
+					YiRu.isUserinfo(userinfo);
+					// YiRu.UserLogin();
+					
+					if(JSON.stringify(userinfo) == "{}" || userinfo == null) return
+					classlist('', 0);
+					$("body").on("tap", ".list li", function() {
+						$(".list li").removeClass("list-active")
+						$(this).addClass("list-active");
+						// console.log($(this).index())
+						classlist($(this).attr("classid"), $(this).index())
+					})
+					// 分类列表
+					function classlist(classid, mid) {
+						YiRu.getajax('shop/classlist', function(data) {
+							baseinfo = data.data.baseinfo;
+							clowlist = data.data.clowlist;
+							// console.log(JSON.stringify(baseinfo));
+							// console.log(JSON.stringify(clowlist));
+							if (data.code == 200) {
+								var str_a = '',
+									str_b = '',
+									len_a = baseinfo.length,
+									len_b = clowlist.length;
+								// 没有下级分类的情况下
+								if(JSON.stringify(clowlist) == "[]") {
+									// str_a += '<span style="display: inline-block;line-height: 2rem; margin-left: 1rem; border-radius: 2px; padding: 2px 10px; border: 1px solid #eee;">商品分类</span></br>'
+									str_a += '<div style="height: 8px;"></div>'
+									for (var i = 0; i < len_a; i++) {
+										str_a += '<div class="le-list" classid="' + baseinfo[i].classid + '"><div>' + baseinfo[i].name_class + '</div></div>'
+									}
+									str_a += '<p style="line-height: 3rem; color: #888; text-align: center; font-size: 0.875rem;">我是有底线的！</p>'
+									$("#le-content").addClass('le');
+									$("#le-content").html(str_a);
+									return
+								}
+								for (var i = 0; i < len_a; i++) {
+									if (i == mid) {
+										str_a += '<li class="list-active" classid="' + baseinfo[i].classid + '">' + baseinfo[i].name_class + '</li>'
+									} else {
+										str_a += '<li classid="' + baseinfo[i].classid + '">' + baseinfo[i].name_class + '</li>'
+									}
+								}
+								$("#list").html(str_a);
+								if(len_b == 0) {
+									str_b = '<p style="line-height: 2rem; color: #888; text-align: center; font-size: 0.75rem; width: 100%;">暂无下级分类</p>'
+									$("#main").html(str_b);
+									return;
+								}
+								for (var j = 0; j < len_b; j++) {
+									str_b += '<li classid="'+ clowlist[j].classid +'"><div><img src="' + clowlist[j].remark + '"></div><p>' + clowlist[j].name_class +
+										'</p></li>'
+								}
+								$("#main").html(str_b);
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							classid: classid
+						}, w, 'post');
+					}
+					
+					// 刷新页面自定义事件
+					window.addEventListener('refresh', function(e) {
+						classlist('', 0);
+					})
+
+				})
+				// 跳转搜索分类页面
+				$("body").on("tap", "#main li", function() {
+					// console.log($(this).attr("classid"))
+					YiRu.openVW("/pages/sorts/screen.html", {classid: $(this).attr("classid")});
+				})
+				
+				$("body").on("tap", ".le-list", function() {
+					// console.log($(this).attr("classid"))
+					YiRu.openVW("/pages/sorts/screen.html", {classid: $(this).attr("classid")});
+				})
+				
+				// 跳珠到搜索页面
+				mui('body').on('tap', '#ss_input', function() {
+					YiRu.openVW("/pages/sorts/screen.html");
+				})
+			}())
+		</script>
+	</body>
+</html>

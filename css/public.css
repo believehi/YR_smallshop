@@ -1,0 +1,76 @@
+*,
+body,
+div,
+i,
+dt,
+dd,
+b,
+p,
+ul,
+li,
+span,
+u,
+h1,
+h2,
+h3,
+h4,
+a,
+input,
+label,
+select {
+	padding: 0px;
+	margin: 0px;
+	font-style: normal;
+	list-style: none;
+	text-decoration: none;
+	touch-action: pan-y;
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	min-height: 100%;
+	font-size: 16px;
+	overflow: hidden;
+}
+
+body {
+	width: 100%;
+	height: 100%;
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	background-position: center center;
+	background-size: cover;
+	color: #333;
+}
+
+select {
+	/*Chrome和Firefox里面的边框是不一样的，所以复写了一下*/
+	/*很关键：将默认的select选择框样式清除*/
+	appearance: none;
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	/*将背景改为红色*/
+	/*加padding防止文字覆盖*/
+	padding-right: 14px;
+}
+
+/*清除ie的默认选择框样式清除，隐藏下拉箭头*/
+select::-ms-expand {
+	display: none;
+}
+
+/*设置IOS页面长按不可复制粘贴，但是IOS上出现input、textarea不能输入，因此将使用-webkit-user-select:auto;*/
+* {
+	-webkit-touch-callout: none;
+	/*系统默认菜单被禁用*/
+	-webkit-user-select: none;
+	/*webkit浏览器*/
+	-khtml-user-select: none;
+	/*早期浏览器*/
+	-moz-user-select: none;
+	/*火狐*/
+	-ms-user-select: none;
+	/*IE10*/
+	user-select: none;
+}

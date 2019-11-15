@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>TabBar</title>
+		<link href="css/index.css" rel="stylesheet" />
+
+	</head>
+	<body>
+		<nav class="mui-bar-tab">
+			<a class="mui-tab-item mui-active" href="./pages/home/home.html">
+				<span class="mui-icon mui-icon-home"></span>
+				<span class="mui-tab-label">首页</span>
+			</a>
+			<a class="mui-tab-item" href="./pages/sorts/sorts.html">
+				<span class="mui-icon mui-icon-sorts"></span>
+				<span class="mui-tab-label">分类</span>
+			</a>
+			<a class="mui-tab-item mui-tab-shop" href="./pages/shopping/shopping.html" id="myshop">
+				<span class="mui-icon mui-icon-shopping"></span>
+				<span class="mui-tab-label">购物车</span>
+				<span class="mui-tab-num" id="stop_num"></span>
+			</a>
+			<a class="mui-tab-item" href="./pages/tuihuo/shopping.html">
+				<span class="mui-icon mui-icon-th"></span>
+				<span class="mui-tab-label">退货</span>
+				<span class="mui-tab-num" id="stop_tdnum"></span>
+			</a>
+			<a class="mui-tab-item" href="./pages/my/my.html">
+				<span class="mui-icon mui-icon-my"></span>
+				<span class="mui-tab-label">我的</span>
+			</a>
+		</nav>
+
+		<script src="js/mui.min.js"></script>
+		<script src="js/jquery.js"></script>
+		<script src="js/app.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			(function() {
+				mui.init();
+				var Index = 0;
+				var subpages = ['./pages/home/home.html', './pages/sorts/sorts.html', './pages/shopping/shopping.html',
+					'./pages/tuihuo/shopping.html', './pages/my/my.html'
+				];
+				mui.plusReady(function() {
+					var w, userinfo, CarCount;
+					var self = plus.webview.currentWebview();
+					plus.webview.close(plus.webview.all())
+					userinfo = JSON.parse(localStorage.getItem('$sh_userinfo'));
+					YiRu.quitApp();
+					YiRu.isUserinfo(userinfo);
+					// YiRu.UserLogin();
+					// console.log(localStorage.getItem('$sh_userinfo'))
+					if(JSON.stringify(userinfo) == "{}" || userinfo == null) return
+
+					for (var i = 0; i < 5; i++) {
+						var sub = plus.webview.create(subpages[i], subpages[i], {
+							top: '0px',
+							bottom: '51px'
+						});
+						if (i != Index) {
+							sub.hide();
+						}
+						self.append(sub);
+					}
+
+
+					//当前激活选项
+					var activeTab = subpages[Index];
+					//选项卡点击事件
+					mui('.mui-bar-tab').on('tap', 'a', function(e) {
+						spCar();
+						//获取目标子页的id
+						var targetTab = this.getAttribute('href');
+						if (targetTab == activeTab) {
+							return;
+						}
+						//显示目标选项卡
+						plus.webview.show(targetTab);
+						// 刷新当前页面
+						mui.fire(plus.webview.getWebviewById(targetTab), 'refresh');
+						//隐藏当前选项卡
+						plus.webview.hide(activeTab);
+						//更改当前活跃的选项卡
+						activeTab = targetTab;
+					});
+
+					// 自定义事件
+					window.addEventListener('re_product', function(e) {
+						console.log(subpages[2] + "___" + activeTab);
+						if(subpages[2] != activeTab){
+							$(".mui-tab-item").removeClass("mui-active");
+							$(".mui-tab-shop").addClass("mui-active");
+							plus.webview.show(subpages[2]);
+							plus.webview.hide(activeTab);
+							activeTab = subpages[2];
+						}
+						// setTimeout(function() {
+						// 	plus.webview.close("/pages/product/product.html");
+						// }, 0);
+						spCar();
+					})
+					
+
+					// 请求购物车数量
+					function spCar() {
+						YiRu.getajax('order/getcarcount', function(data) {
+							CarCount = data.data.CarCount1;
+							CarCounttd = data.data.CarCount0;
+							// console.log(JSON.stringify(data))
+							if (data.code == 200) {
+								if (CarCount == 0) {
+									$("#stop_num").hide()
+									return;
+								};
+								if (CarCount > 99) {
+									$("#stop_num").html("···");
+								} else {
+									$("#stop_num").html(CarCount);
+								}
+								$("#stop_num").show()
+								
+								if (CarCounttd == 0) {
+									$("#stop_tdnum").hide()
+									return;
+								};
+								if (CarCounttd > 99) {
+									$("#stop_tdnum").html("···");
+								} else {
+									$("#stop_tdnum").html(CarCounttd);
+								}
+								$("#stop_tdnum").show()
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							drpid: userinfo.companyId,
+							userid: userinfo.userId
+						}, w, 'post');
+					}
+					spCar();
+					
+				});
+			}())
+		</script>
+	</body>
+</html>

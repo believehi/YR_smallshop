@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>订单取消</title>
+		<link href="../../css/public.css" rel="stylesheet" />
+		<link href="settlement.css" rel="stylesheet" />
+
+	</head>
+	<body>
+		<!-- 导航 -->
+		<header class="mui-bar">
+			<img src="../../img/i_fh.png" class="mui-action-back">
+			<b class="mui-title">返回结算</b>
+		</header>
+		<div class="content">
+			<div class="title" id="choice">
+				<img src="../../img/js_dz.png">
+				<p id="xd_kehu"></p>
+				<img src="../../img/i_xq.png">
+			</div>
+			<div class="main">
+				<div class="main-title">下单商品</div>
+				<div id="list">
+					<div class="main-content">
+						<div class="main-img">
+							<img src="../../img/cp_01.png">
+						</div>
+						<div class="main-text">
+							<div class="main-text_aa">
+								<span>玛丽黛佳小金砖口红风持久保湿不易脱色玛丽黛佳小金砖口红风持久保湿不易脱色</span>
+								<span>￥40</span>
+							</div>
+							<div class="main-text_bb">x 22</div>
+							<div class="main-text_cc">
+								<span>规格：100ml</span>
+								<span>单位：个</span>
+								<span>库存：1000个</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="list">
+					<span>结算方式</span>
+					<span>结款方式</span>
+					<img src="../../img/i_xq.png">
+				</div>
+				<div class="list">
+					<span>配送方式</span>
+					<span>配送方式</span>
+					<img src="../../img/i_xq.png">
+				</div>
+				<div class="list">
+					<span>促销优惠</span>
+					<span></span>
+				</div>
+				<div class="list">
+					<span>配送费</span>
+					<span></span>
+				</div>
+				<div class="list">
+					<span>订单备注</span>
+					<span>订单备注</span>
+				</div>
+				<div class="bott-zj">
+					<div>共<span id="sp_aa">0</span>件</div>
+					<div>总计：<span id="zs_aa">￥0</span></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="footer">
+			<div class="li-sl">共<span id="sp_bb">0</span>件</div>
+			<div class="li-zs">总计：<span id="zs_bb">￥0</span></div>
+			<div class="li-qx" id="tj-order">提交订单</div>
+		</div>
+
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/jquery.js"></script>
+		<script src="../../js/app.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			(function() {
+				mui.init();
+				var w, ws, userinfo, bill, baseinfo, orderItem, itemBar = {}, money = 0, num_sp = 0;
+				mui.plusReady(function() {
+					ws = plus.webview.currentWebview();
+					bill = ws.baseinfo;
+					ws.setStyle(YiRu.viewstyle());
+					YiRu.UserLogin();
+					userinfo = JSON.parse(localStorage.getItem('$sh_userinfo'));
+
+					function spdetails() {
+						w = plus.nativeUI.showWaiting('', YiRu.WaitingStyle());
+						YiRu.getajax('order/getorderinfo', function(data) {
+							var str_aa = '';
+							baseinfo = data.data.baseinfo;
+							orderItem = baseinfo.orderItem;
+							// console.log(JSON.stringify(baseinfo));
+							if (data.code == 200) {
+								for (var i = 0, len_aa = orderItem.length; i < len_aa; i ++) {
+									str_aa += '<div class="main-content">' +
+														'<div class="main-img">' +
+															'<img src="' + (orderItem[i].path_local || "../../img/default.png") + '">' +
+														'</div>' +
+														'<div class="main-text">' +
+															'<div class="main-text_aa">' +
+																'<span>' + orderItem[i].name_full + '</span>' +
+																'<span>￥' + (+orderItem[i].price_order).toFixed(2) + '</span>' +
+															'</div>' +
+															'<div class="main-text_bb">x ' + orderItem[i].num_order + '</div>' +
+															'<div class="main-text_cc">' +
+																'<span>规格：' + orderItem[i].standards + '</span>' +
+																'<span>单位：' + orderItem[i].unit_sale + '</span>' +
+																'<span>库存：' + orderItem[i].num + '</span>' +
+															'</div>' +
+														'</div>' +
+													'</div>';
+									money += orderItem[i].price_order * orderItem[i].num_order;
+									num_sp += orderItem[i].num_order;
+								}
+								$("#list").html(str_aa);
+								$("#zs_aa").html('￥' + (+money).toFixed(2));
+								$("#zs_bb").html('￥' + (+money).toFixed(2));
+								$("#sp_aa").html(num_sp);
+								$("#sp_bb").html(num_sp);
+								$("#xd_kehu").html(baseinfo.custname);
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							bill: bill,
+							type: 0,
+							drpid: userinfo.companyId
+						}, w, 'post');
+					}
+					spdetails();
+					
+					// 选择下单客户返回的数据
+					// window.addEventListener('doit', function(e){
+					// 	itemBar= e.detail.aaa;
+					// 	$("#xd_kehu").html(itemBar.name_full)
+					// 	// console.log(JSON.stringify(itemBar));
+					// });
+					// console.log(JSON.stringify(itemBar));
+					
+					
+					// 提交订单
+					$("body").on("tap", "#tj-order", function() {
+						// if (itemBar == undefined || $("#xd_kehu").text() == "请选择下单客户") {
+						// 	mui.toast("请选择下单客户！");
+						// 	return;
+						// }
+						
+						w = plus.nativeUI.showWaiting('', YiRu.WaitingStyle());
+						YiRu.getajax('order/confirmorder', function(data) {
+							// console.log(JSON.stringify(data));
+							if (data.code == 200) {
+								mui.toast("订单已提交成功！")
+								mui.back();
+								// YiRu.openVW("/index.html");
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							bill: bill,
+							drpid: userinfo.companyId,
+							value: money,
+							custid: baseinfo.custid,
+							mktid: baseinfo.mktid,
+							num_shop: num_sp,
+							deptid: ''
+						}, w, 'post');
+					})
+				
+				
+				})
+				// 选择客户
+				// $("body").on("tap", "#choice", function() {
+				// 	YiRu.openVW("/pages/shopping/choice.html")
+				// })
+
+			}())
+		</script>
+	</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>分类搜索</title>
+		<link href="../../css/mui.min.css" rel="stylesheet" />
+		<link href="../../css/public.css" rel="stylesheet" />
+		<link href="screen.css" rel="stylesheet" />
+
+	</head>
+	<body>
+		<!-- 搜索栏 -->
+		<header class="title">
+			<div class="mui_fh mui-action-back">
+				<img src="../../img/i_fh.png">
+			</div>
+			<div class="mui_input">
+				<img src="../../img/i_ss.png">
+				<input type="" name="" id="mui_input" value="" placeholder="搜索商品名称 / 编号 / 助记符" />
+				<!-- <img src="../../img/i_sm.png" id="mui_qx"> -->
+			</div>
+			<div class="mui_ss" id="ss_shopping">搜索</div>
+		</header>
+		<div class="nav">
+			<div class=""><span>筛选</span><span></span></div>
+			<div><span>分类</span><span></span></div>
+		</div>
+		<!-- 列表 -->
+		<div id="refreshContainer" class="content">
+			<div class="mui-scroll-wrapper">
+				<ul id="content" class="mui-scroll">
+					
+				</ul>
+			</div>
+		</div>
+		<!-- 遮罩层 -->
+		<div class="back"></div>
+		<!-- 筛选 -->
+		<div class="saixuan">
+			<p>价格区间</p>
+			<div class="saixuan-qj">
+				<input type="number" name="" id="input_min" value="0" />
+				<span></span>
+				<input type="number" name="" id="input_max" value="0" />
+			</div>
+			<p>商品分类</p>
+			<div class="saixuan-sx sx_shop" id="fllist_aa">
+
+			</div>
+		</div>
+		<!-- 分类 -->
+		<div class="fenlei">
+			<div class="saixuan-sx fl_shop" id="fllist_bb">
+
+			</div>
+		</div>
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/jquery.js"></script>
+		<script src="../../js/app.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			(function() {
+				// mui.init();
+				var w, ws, userinfo;
+				var regVal=/^\d+$/;
+				mui.plusReady(function() {
+					ws = plus.webview.currentWebview();
+					ws.setStyle(YiRu.viewstyle());
+					YiRu.UserLogin();
+					userinfo = JSON.parse(localStorage.getItem('$sh_userinfo'));
+					// console.log(localStorage.getItem('$sh_userinfo'))
+					var pag = 2,
+						full = '',
+						cid = '',
+						price_min = 0,
+						price_max = 10000000000;
+					if(ws.classid != undefined) cid = ws.classid;
+					
+					// 商品列表
+					function splist(page, name_full, classid, min, max) {
+						YiRu.getajax('shop/shopscreen', function(data) {
+							var shoplist = data.data.shoplist;
+							// console.log(JSON.stringify(shoplist))
+							if (data.code == 200) {
+								var str = '',
+									len = shoplist.length;
+								if (len < 10) {
+									mui('#refreshContainer').pullRefresh().disablePullupToRefresh();
+								}
+								if(len == 0) {
+									str = '<p style="line-height: 5rem; color: #888; text-align: center; font-size: 0.875rem;">暂无您所需的商品</p>'
+									$("#content").html(str);
+									return;
+								}
+								for (var i = 0; i < len; i++) {
+									str += '<li shopid="' + shoplist[i].shopid + '">' +
+														'<div class="list-img">' +
+															'<img src="' + (shoplist[i].path_local || "../../img/default.png") + '">' +
+														'</div>' +
+														'<div class="main">' +
+															'<div class="main-title">' +
+																'<span></span>' +
+																'<span>' + shoplist[i].name_full + '</span>' +
+															'</div>' +
+															'<div class="main-content">' +
+																'<span>规格：' + shoplist[i].standards + 'ml</span>' +
+																'<span>单位：' + shoplist[i].unit_sale + '</span>' +
+																'<span>库存：' + shoplist[i].num + '个</span>' +
+															'</div>' +
+															'<div class="main-content">' +
+																'<span>最大包装：' + shoplist[i].num_box + '</span>' +
+																'<span>最小不可拆包装数：' + shoplist[i].num_pack + '</span>' +
+															'</div>' +
+															'<div class="main-sub">' +
+																'<span>￥' + shoplist[i].price_sale + '</span>' +
+																// '<span>￥' + shoplist[i]. + '</span>' +
+																'<span>已售 ' + shoplist[i].num_sale + ' ' + shoplist[i].unit_sale +'</span>' +
+															'</div>' +
+														'</div>' +
+													'</li>';
+								}
+								if(len < 10 && len > 4) {
+									str += '<p style="line-height: 3rem; color: #888; text-align: center; font-size: 0.875rem;">我是有底线的！</p>'
+								}
+								if (page > 1) {
+									if(len == 0) return
+									$("#content").append(str);
+									pag ++;
+									mui('#refreshContainer').pullRefresh().endPullupToRefresh();
+									return
+								}
+								$("#content").html(str);
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							page: page,
+							pagenum: 10,
+							name_full: name_full,
+							classid: classid,
+							price_from: min,
+							price_to: max,
+							drpid: userinfo.companyId
+						}, w, 'post');
+					}
+					splist(1, full, cid, price_min, price_max);
+
+					mui.init({
+						pullRefresh : {
+								container: "#refreshContainer",
+								up : {
+									height: 50,//可选.默认50.触发上拉加载拖动距离
+									auto: false,//可选,默认false.自动上拉加载一次
+									contentrefresh : "正在加载...",//可选，正在加载状态时，上拉加载控件上显示的标题内容
+									contentnomore: '没有更多数据了',//可选，请求完毕若没有更多数据时显示的提醒内容；
+									callback: function () {
+										setTimeout(function(){
+											splist(pag, full, cid, price_min, price_max);
+										}, 1000)
+									}
+								}
+							}
+					});	
+
+
+					// 分类列表
+					function fllist(classid) {
+						YiRu.getajax('shop/classlist', function(data) {
+							var baseinfo = data.data.baseinfo;
+							// console.log(JSON.stringify(baseinfo))
+							if (data.code == 200) {
+								var str_fl = '',
+									len_fl = baseinfo.length;
+								for (var i = 0; i < len_fl; i++) {
+									if(i == 0) {
+										str_fl += '<div class="sx_active" classid="' +  baseinfo[i].classid + '" ><span>' +  baseinfo[i].name_class + '</span></div>'
+									} else {
+										str_fl += '<div classid="' + baseinfo[i].classid + '" ><span>' + baseinfo[i].name_class + '</span></div>'
+									}
+								}
+								$("#fllist_aa").html(str_fl);
+								$("#fllist_bb").html(str_fl);
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+								classid: classid
+						}, w, 'post');
+					}
+					fllist(cid);
+					
+					// 点击搜索
+					$("body").on("tap", "#ss_shopping", function () {
+						var val_min = $("#input_min").val(),
+						 val_max = $("#input_max").val();
+						if(regVal.test(val_min) == false || regVal.test(val_max) == false) {
+							mui.toast("价格必须为数字")
+							return;
+						}
+						val_min = val_min.replace(/\b(0+)/gi,"");
+						val_max = val_max.replace(/\b(0+)/gi,"");
+						price_min = val_min == '' ? 0 : val_min;
+						price_max = val_max == '' ? 10000 : val_max;
+						$(".nav div").removeClass('nav_active');
+						$(".saixuan").hide();
+						$(".fenlei").hide();
+						$('.back').hide();
+						full = $("#mui_input").val();
+						cid = $("#fllist_aa .sx_active").attr("classid")
+						splist(1, full, cid, price_min, price_max);
+						pag = 2;
+						mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
+					})
+					
+					// 跳珠到商品详情
+					mui('body').on('tap', '#content li', function() {
+						YiRu.openVW("/pages/product/product.html", {shopid: $(this).attr("shopid")});
+					})
+					
+				})
+				
+				
+				// 搜索栏input聚焦事件
+				$("#mui_input").focus(function() {
+					$(".nav div").removeClass('nav_active');
+					$(".saixuan").hide();
+					$(".fenlei").hide();
+					$(".back").hide();
+				})
+				// 筛选栏的显示事件
+				$("body").on("tap", ".nav div", function() {
+					$(".nav div").removeClass('nav_active');
+					$(this).addClass('nav_active');
+					if ($(this).index() == 0) {
+						$(".saixuan").show();
+						$(".fenlei").hide();
+						$(".back").show();
+					} else {
+						$(".saixuan").hide();
+						$(".fenlei").show();
+						$(".back").show();
+					}
+				})
+
+				$("body").on("tap", ".back", function() {
+					$(".nav div").removeClass('nav_active');
+					$(".saixuan").hide();
+					$(".fenlei").hide();
+					$(this).hide();
+				})
+				
+				// 分类标签
+				$("body").on("tap", ".sx_shop div", function() {
+					$(".sx_active").removeClass('sx_active');
+					$(this).addClass('sx_active');
+					$(".fl_shop div").eq($(this).index()).addClass('sx_active');
+				})
+				$("body").on("tap", ".fl_shop div", function() {
+					$(".sx_active").removeClass('sx_active');
+					$(this).addClass('sx_active');
+					$(".sx_shop div").eq($(this).index()).addClass('sx_active');
+				})
+
+			}())
+		</script>
+	</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>首页</title>
+		<link href="../../css/public.css" rel="stylesheet" />
+		<link href="product.css" rel="stylesheet" />
+
+	</head>
+	<body>
+		<!-- nav -->
+		<div class="nav">
+			<img src="../../img/shop_nav.jpg" class="nav-img" id="nav-img">
+			<div class="search">
+				<img src="../../img/shop_01.png" class="mui-action-back">
+				<img src="../../img/shop_02.png" class="addshop">
+				<img src="../../img/shop_03.png">
+			</div>
+		</div>
+		<!-- 商品内容 title -->
+		<div class="title" id="title">
+			
+		</div>
+		<!-- 商品基础信息 -->
+		<div class="title basic" id="basic">
+			
+		</div>
+		<!-- 商品管理信息 -->
+		<div class="title admin" id="admin">
+			
+		</div>
+		<!-- 促销 -->
+		<div class="title promo">
+			<b>促销</b>
+			<div>促销信息1</div>
+			<div>促销信息2</div>
+		</div>
+		<!-- 其他 -->
+		<div class="title other">
+			<b>其他信息</b>
+			<div class="">
+
+			</div>
+		</div>
+		<!-- 底部 -->
+		<div class="footer">
+			<div class="ft-xz" id="myshopping">
+				<img src="../../img/tab_03.png">
+				<span>购物车</span>
+				<div id="stop_num"></div>
+			</div>
+			<div class="ft-js addshop" flag_rtn='1'>加入购物车</div>
+			<div class="ft-js ft-td addshop" flag_rtn='0'>选择退单</div>
+		</div>
+
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/jquery.js"></script>
+		<script src="../../js/app.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			(function() {
+				mui.init();
+				var w, ws, userinfo, shopid, shopbase, shopbase, CarCount;
+				mui.plusReady(function() {
+					ws = plus.webview.currentWebview();
+					ws.setStyle(YiRu.viewstyle());
+					YiRu.UserLogin();
+					userinfo = JSON.parse(localStorage.getItem('$sh_userinfo'));
+					shopid = ws.shopid;
+					// console.log(shopid)
+					spdetails()
+					spCar()
+					
+					// 加入购物车
+					var flag_rtn
+					$("body").on("tap", ".addshop", function() {
+						flag_rtn = $(this).attr("flag_rtn");
+						YiRu.getajax('order/addcar', function(data) {
+							if (data.code == 200) {
+								flag = false;
+								if(flag_rtn == "1") {
+									mui.toast("成功加入购物车！");
+								} 
+								if(flag_rtn == "0") {
+									mui.toast("成功加入退货订单！");
+								}
+								spCar();
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							drpid: userinfo.companyId,
+							userid: userinfo.userId,
+							flag_rtn: $(this).attr("flag_rtn"),
+							Shopid: shopid
+						}, w, 'post');
+					})
+					
+					// 获取商品详情
+					function spdetails() {
+						w = plus.nativeUI.showWaiting('', YiRu.WaitingStyle());
+						YiRu.getajax('shop/shopdetails', function(data) {
+							var str_a, str_b, str_c;
+							// console.log(JSON.stringify(data))
+							// shopbase = data.data.shopbase;
+							shopbase = data.data.shopbase;
+							if (data.code == 200) {
+								if(shopbase.path_local != '') $("#nav-img").attr("src", shopbase.path_local);
+								str_a = '<b>' + shopbase.name_full + '</b>' +
+												'<div class="title-gg">' +
+													'<span>规格：' + shopbase.standards + '</span>' +
+													'<span>单位：' + shopbase.unit_sale + '</span>' +
+													'<span>计量：' + shopbase.unit_sale + '</span>' +
+												'</div>' +
+												'<div class="title-gg">' +
+													'<span>最大包装数：' + shopbase.num_box + '</span>' +
+													'<span>最小不可拆包装数：' + shopbase.num_pack + '</span>' +
+												'</div>' +
+												'<div class="title-but title-gg">' +
+													'<div class="title-jg">' +
+														'<span>￥' + shopbase.price_sale + '</span>' +
+														'<span></span>' +
+													'</div>' +
+													'<div>库存：' + shopbase.num + ' ' + shopbase.unit_sale + '</div>' +
+													'<div>已售：' + (shopbase.num_sale || "0 ") + '' + shopbase.unit_sale + '</div>' +
+												'</div>';
+								str_b = '<b>基础信息</b>' +
+												'<div class="basic-list">' +
+													'<div><span>全称</span><span class="basic-list-img">'+ shopbase.name_full +'</span></div>' +
+												'</div>' +
+												'<div class="basic-list">' +
+													'<div><span>助记符</span><span>' + shopbase.code_help + '</span></div>' +
+													'<div><span>别名</span><span>' + shopbase.name_alias + '</span></div>' +
+												'</div>' +
+												'<div class="basic-list">' +
+													'<div><span>商品编号</span><span>' + shopbase.shopid + '</span></div>' +
+													'<div><span>品牌</span><span>' + shopbase.trademark + '</span></div>' +
+												'</div>' +
+												'<div class="basic-list">' +
+													'<div><span>条形码</span><span>' + shopbase.txm + '</span></div>' +
+													'<div><span>小品牌</span><span>' + shopbase.marksmall + '</span></div>' +
+												'</div>' +
+												'<div class="basic-list">' +
+													'<div><span>厂家条码</span><span>' + shopbase.txm_plant + '</span></div>' +
+													'<div><span>商标</span><span>' + shopbase.trademark + '</span></div>' +
+												'</div>' +
+												'<div class="basic-list">' +
+													'<div><span>颜色</span><span>' + shopbase.code_color + '</span></div>' +
+													'<div><span>设计年度</span><span>' + shopbase.year_make + '</span></div>' +
+												'</div>' +
+												'<div class="basic-list">' +
+													'<div><span>尺寸</span><span>' + shopbase.code_size + '</span></div>' +
+													'<div><span>样式(款式)</span><span>' + shopbase.type_shop + '</span></div>' +
+												'</div>';
+								str_c = '<b>商品管理信息</b>' +
+												'<div class="ad-content">' +
+													'<div class="basic-list">' +
+														'<div><span>所属柜组</span><span>' + shopbase.countid + '</span></div>' +
+														'<div><span>所属分类</span><span>' + shopbase.name_class + '</span></div>' +
+													'</div>' +
+													'<div class="basic-list">' +
+														'<div><span>所属部门</span><span>' + shopbase.deptid + '</span></div>' +
+														'<div><span>ABC分类</span><span>' + '' + '</span></div>' +
+													'</div>' +
+													'<div class="basic-list">' +
+														'<div><span>所属产品系列</span><span>' + '' + '</span></div>' +
+														'<div><span>送货收费分类</span><span>' + '' + '</span></div>' +
+													'</div>' +
+													'<div class="basic-list ad_list">' +
+														'<div>' +
+															'<i></i>' +
+															'<span>新产品</span>' +
+														'</div>' +
+														'<div>' +
+															'<i></i>' +
+															'<span>加工商品</span>' +
+														'</div>' +
+													'</div>' +
+													'<div class="basic-list ad_list">' +
+														'<div>' +
+															'<i class="ad_active"></i>' +
+															'<span>属于元素商品</span>' +
+														'</div>' +
+														'<div>' +
+															'<i></i>' +
+															'<span>元素商品可销售</span>' +
+														'</div>' +
+													'</div>' +
+												'</div>';
+								$("#title").html(str_a);
+								$("#basic").html(str_b);
+								$("#admin").html(str_c);
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							shopid: shopid,
+							drpid: userinfo.companyId
+						}, w, 'post');
+					}
+					
+					// 请求购物车数量
+					function spCar() {
+						YiRu.getajax('order/getcarcount', function(data) {
+							CarCount = data.data.CarCount1;
+							CarCounttd = data.data.CarCount0;
+							// console.log(JSON.stringify(data))
+							if (data.code == 200) {
+								if (CarCount == 0) {
+									$("#stop_num").hide()
+									return;
+								};
+								if (CarCount > 99) {
+									$("#stop_num").html("···");
+								} else {
+									$("#stop_num").html(CarCount);
+								}
+								$("#stop_num").show()
+								
+								// if (CarCounttd == 0) {
+								// 	$("#stop_tdnum").hide()
+								// 	return;
+								// };
+								// if (CarCounttd > 99) {
+								// 	$("#stop_tdnum").html("···");
+								// } else {
+								// 	$("#stop_tdnum").html(CarCounttd);
+								// }
+								// $("#stop_tdnum").show()
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							drpid: userinfo.companyId,
+							userid: userinfo.userId
+						}, w, 'post');
+					}
+
+					// 跳珠到购物车
+					$("body").on("tap", "#myshopping", function() {
+						// console.log(JSON.stringify(plus.webview.getLaunchWebview()));
+						mui.fire(plus.webview.getLaunchWebview(), 're_product');
+						mui.fire(plus.webview.getWebviewById("/index.html"), 're_product');
+						plus.webview.close("/pages/home/search.html");
+						plus.webview.close("/pages/sorts/screen.html");
+						setTimeout(function() {
+							mui.back();
+						}, 50);
+					})
+
+				})
+			}())
+		</script>
+	</body>
+</html>

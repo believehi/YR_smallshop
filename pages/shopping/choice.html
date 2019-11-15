@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>客户列表</title>
+		<link rel="stylesheet" type="text/css" href="../../css/mui.min.css"/>
+		<link href="../../css/public.css" rel="stylesheet" />
+		<link href="./choice.css" rel="stylesheet" />
+
+	</head>
+	<body>
+		<!-- 导航 -->
+		<header class="mui-bar_init">
+			<img src="../../img/i_fh.png" class="mui-action-back">
+			<div class="mui-title_list">客户列表</div>
+		</header>
+		<!-- 搜索栏 -->
+		<div class="search">
+			<div class="">
+				<img src="../../img/i_ss.png" >
+				<input type="" name="" id="search" value="" placeholder="搜索客户名称"/>			
+				<img src="../../img/i_qx.png" id="clear_name">
+			</div>
+			<span id="sousuo">搜索</span>
+		</div>
+		<!-- 客户列表 -->
+		<div id="refreshContainer" class="content">
+			<div class="mui-scroll-wrapper">
+				<ul id="list" class="mui-scroll">
+					<!-- 商品列表 -->
+				</ul>
+				<!-- <div class="add_xin" id="add_kh">添加下单客户</div> -->
+			</div>
+		</div>
+		<!-- 底部确认客户 -->
+		<div class="footer">
+			<div id="qr_kh">确认客户</div>
+		</div>
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/jquery.js"></script>
+		<script src="../../js/app.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			(function() {
+				// mui.init();
+				var w, ws, userinfo, npage = 2, custname = '';
+				mui.plusReady(function() {
+					ws = plus.webview.currentWebview();
+					ws.setStyle(YiRu.viewstyle());
+					YiRu.UserLogin();
+					userinfo = JSON.parse(localStorage.getItem('$sh_userinfo'));
+
+					function custlist(page, custname) {
+						YiRu.getajax('cust/custlist', function(data) {
+							baseinfo = data.data.baseinfo;
+							// console.log(JSON.stringify(baseinfo))
+							if (data.code == 200) {
+								mui('#refreshContainer').pullRefresh().endPullupToRefresh();
+								var str = '', len = baseinfo.length;
+								if(len == 0 && page == 1) {
+									$("#list").html('<p style="line-height: 4rem; color: #888; text-align: center; font-size: .875rem;">暂无对应的客户</p>')
+									return;
+								}
+								for(var i = 0; i < len; i ++) {
+									str += '<li>' + 
+													'<div class="list-input">' +
+														'<input type="radio" id="" name="input_dx" value="" name_full="' + baseinfo[i].name_full + 
+														'" custid="' + baseinfo[i].custid + '" mktid="' + baseinfo[i].mktid + '" addr="' + baseinfo[i].addr + '" />' +
+													'</div>' +
+													'<div class="list-img">' + 
+														'<img src="' + baseinfo[i].headurl + '">' + 
+													'</div>' + 
+													'<div class="list">' + 
+														'<div>' + 
+															'<span>批发客户全称：</span><span>' + baseinfo[i].name_full + '</span>' + 
+														'</div>' + 
+														'<div>' + 
+															'<span>批发客户号：</span><span>' + baseinfo[i].custid + '</span>' + 
+															'<span>行政区域：</span><span>' + baseinfo[i].name_short + '</span>' + 
+														'</div>' + 
+														'<div>' + 
+															'<span>收货地址：</span><span>' + baseinfo[i].addr + '</span>' + 
+														'</div>' + 
+													'</div>' + 
+												'</li>';
+								}
+								if(page > 1) {
+									$("#list").append(str);
+									npage ++;
+									return;
+								}
+								$("#list").html(str);
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							drpid: userinfo.companyId,
+							page: page,
+							num: 10,
+							custname: custname || ''
+						}, w, 'post');
+					}
+					custlist(1)
+
+					mui.init({
+						pullRefresh : {
+								container: "#refreshContainer",
+								up : {
+									height: 50,//可选.默认50.触发上拉加载拖动距离
+									auto: false,//可选,默认false.自动上拉加载一次
+									contentrefresh : "正在加载...",//可选，正在加载状态时，上拉加载控件上显示的标题内容
+									contentnomore: '没有更多数据了',//可选，请求完毕若没有更多数据时显示的提醒内容；
+									callback: function () {
+										setTimeout(function(){
+											custlist(npage, custname);
+											mui('#refreshContainer').pullRefresh().endPullupToRefresh();
+										}, 1000)
+									}
+								}
+							}
+					});		
+
+					// 点击搜索
+					
+					mui("body").on("tap", "#sousuo", function() {
+						if ($("#search").val() == '') return;
+						npage = 2;
+						custname = $("#search").val();
+						custlist(1, custname);
+					})
+					
+					mui("body").on("tap", "#clear_name", function() {
+						npage = 2;
+						custname = '';
+						$("#search").val("");
+						custlist(1, custname);
+					})
+
+					// 确认客户
+					var itemBar = {}
+					$("#qr_kh").on("tap", function() {
+						$("input[name=input_dx]").each(function(){
+							if ($(this).is(":checked")) {
+								itemBar.name_full = $(this).attr("name_full");
+								itemBar.custid = $(this).attr("custid");
+								itemBar.mktid = $(this).attr("mktid");
+								itemBar.addr = $(this).attr("addr");
+								// console.log(JSON.stringify(itemBar));
+								var view = plus.webview.currentWebview().opener();
+								mui.fire(view,'doit',{
+								    aaa: itemBar
+								});
+								mui.back();
+							} 
+						})
+						setTimeout(function(){
+							if(JSON.stringify(itemBar) == "{}") mui.toast("请选择客户");
+						}, 100)
+					})
+					
+				})
+				// 跳转添加下单客户
+				$("#add_kh").on("tap", function() {
+					mui.toast("暂不支持添加下单客户！")
+					return;
+					YiRu.openVW("/pages/customer/kehu.html")
+				})
+			}())
+		</script>
+	</body>
+</html>

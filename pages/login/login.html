@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>登录</title>
+		<link href="../../css/public.css" rel="stylesheet" />
+		<link href="login.css" rel="stylesheet" />
+
+	</head>
+	<body>
+		<div class="mui-phone mui-item">
+			<img src="../../img/dl_01.png">
+			<input type="" name="" id="phone" value="0001" placeholder="公司Drp系统编号" />
+			<!-- <img src="../../img/login_01.png"> -->
+		</div>
+		<div class="mui-code mui-item">
+			<img src="../../img/dl_02.png">
+			<input type="" name="" id="code" value="002" placeholder="员工Drp编号" />
+		</div>
+		<div class="mui-card mui-item">
+			<img src="../../img/dl_03.png">
+			<input type="" name="" id="card" value="" placeholder="Drp登录密码" />
+		</div>
+		<div class="mui-login mui-item" id="UserLogin">登&emsp;录</div>
+		<div class="Qita">
+			<span id="register">注册</span>|
+			<span id="password">忘记密码?</span>
+		</div>
+		<!-- 注册提示框 -->
+		<div class="content">
+			<img src="../../img/dl_ts.png">
+			<p>请联系公司相关部门获取账号信息</p>
+			<div class="mui-login mui-item" id="mui-return">返&emsp;回</div>
+		</div>
+
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/jquery.js"></script>
+		<script src="../../js/app.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			(function() {
+				mui.init();
+				var w, ws;
+				mui.plusReady(function() {
+					ws = plus.webview.currentWebview();
+					ws.setStyle(YiRu.viewstyle());
+					YiRu.quitApp();
+					// 登录
+					$("#UserLogin").on("tap", function() {
+						if($("#phone").val() == '') {
+							mui.toast('请填写公司Drp系统编号');
+							return;
+						}
+						if($("#code").val() == '') {
+							mui.toast('请填写员工Drp编号');
+							return;
+						}
+						// if($("#card").val() == '') {
+						// 	mui.toast('请填写Drp登录密码');
+						// 	return;
+						// }
+						w = plus.nativeUI.showWaiting('', YiRu.WaitingStyle());
+						YiRu.getajax('user/loginbypwd', function(data) {
+							// console.log(JSON.stringify(data.data.baseinfo));
+							if (data.code == 200) {
+								YiRu.setuserinfo(data.data.baseinfo);
+								plus.nativeUI.toast("登录成功");
+								YiRu.openVW("/index.html");
+								plus.webview.currentWebview().hide(); 
+								setTimeout(function() {
+									plus.webview.currentWebview().close();
+								}, 500);
+							} else {
+								//临时保存
+								localStorage.setItem('$sh_linshiuserinfo', JSON.stringify(data.data.baseinfo));
+								mui.toast('网络不给力，请检查网络！');
+							}
+							w.close();
+						}, {
+							drpid: $("#phone").val(),
+							username: $("#code").val(),
+							password: $("#card").val()
+						}, w, 'post');
+
+					})
+
+
+
+
+				})
+
+				// 注册弹窗
+				$("#register").on("tap", function() {
+					$(".content").css({
+						"display": "flex"
+					});
+				})
+				$("#mui-return").on("tap", function() {
+					$(".content").hide();
+				})
+				// 跳转修改密码
+				mui('body').on('tap', '#password', function() {
+					mui.openWindow("/pages/login/password.html")
+				})
+
+
+			}())
+		</script>
+	</body>
+</html>

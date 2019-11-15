@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>登录</title>
+		<link href="../../css/public.css" rel="stylesheet" />
+		<link href="login.css" rel="stylesheet" />
+
+	</head>
+	<body>
+		<div class="">
+
+		</div>
+
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/jquery.js"></script>
+		<script src="../../js/app.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			(function() {
+				mui.init();
+				var w, ws, userinfo;
+				mui.plusReady(function() {
+					ws = plus.webview.currentWebview();
+					ws.setStyle(YiRu.viewstyle());
+					YiRu.UserLogin();
+					userinfo = JSON.parse(localStorage.getItem('$sh_userinfo'));
+
+
+
+
+				})
+			}())
+			// getajax
+			function spdetails() {
+				w = plus.nativeUI.showWaiting('', YiRu.WaitingStyle());
+				YiRu.getajax('shop/shouindex', function(data) {
+					shoplist = data.data.shoplist;
+					// console.log(JSON.stringify(data));
+					if (data.code == 200) {
+						$("#list").html('');
+						var str = '',
+							len = shoplist.length;
+						// $("#list").html(str);
+					} else {
+						plus.nativeUI.toast(data.info);
+					}
+				}, {
+					shopid: shopid
+				}, w, 'post');
+			}
+		</script>
+	</body>
+</html>

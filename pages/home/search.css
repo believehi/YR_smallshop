@@ -1,0 +1,183 @@
+body {
+	background: #fff;
+}
+
+.title {
+	position: fixed;
+	top: 0;
+	height: 3rem;
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom: 0.0625rem solid #eee;
+	font-size: 0.875rem;
+}
+
+.mui_fh {
+	width: 2rem;
+	height: 3rem;
+	margin-right: .375rem;
+	box-sizing: border-box;
+	padding: 1rem 0.75rem;
+}
+
+.mui_fh img {
+	width: 100%;
+	height: 100%;
+}
+
+.mui_ss {
+	padding: 0 0.75rem;
+	height: 100%;
+	line-height: 3rem;
+}
+.mui_input {
+	flex: 1;
+	background: #eee;
+	height: 2rem;
+	border-radius: 1rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.mui_input img {
+	width: 1rem;
+	height: 1rem;
+	padding: 0 0.5rem;
+	box-sizing: content-box;
+}
+
+.mui_input img:nth-of-type(2) {
+	width: 1.125rem;
+	height: 1.125rem;
+}
+
+.mui_input input {
+	flex: 1;
+	background: transparent;
+	outline: none;
+	border: 0;
+	font-size: 0.75rem;
+}
+
+.record,
+.back,
+.content {
+	position: fixed;
+	top: 3.0625rem;
+	bottom: 0;
+	width: 100%;
+	overflow: auto;
+}
+
+.mui-scroll-wrapper {
+	overflow: auto;
+}
+
+.content li {
+	padding: 0.5rem 0.625rem;
+	position: relative;
+	border-bottom: 0.0625rem solid #eee;
+}
+
+.list-img {
+	position: absolute;
+	left: 0.625rem;
+	top: 0.625rem;
+	width: 5rem;
+	height: 5rem;
+	border-radius: 0.3125rem;
+	overflow: hidden;
+}
+
+.list-img img {
+	width: 100%;
+	min-height: 100%;
+	/* height: 100%; */
+}
+
+.main {
+	margin-left: 5.5rem;
+}
+
+.main-title {
+	font-size: 0.8125rem;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.main-title span:nth-child(1) {
+	font-size: 0.5rem;
+	color: #fff;
+	background: #FD7718;
+	line-height: 0.5rem;
+	/* padding: 0.0625rem 0.125rem; */
+	border-radius: 0.43725rem;
+	margin-right: 0.1875rem;
+	text-align: center;
+}
+
+.main-title span:nth-child(2) {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.main-content {
+	display: flex;
+	justify-content: space-between;
+	font-size: 0.625rem;
+	line-height: 1.25rem;
+	color: #888;
+}
+
+.main-sub {
+	position: relative;
+	font-size: 0.625rem;
+	color: #666;
+	margin-top: 0.25rem;
+}
+
+.main-sub span:nth-child(1) {
+	font-size: 1rem;
+	font-weight: 600;
+	color: #FD7718;
+	margin-right: 0.25rem;
+}
+
+/* .main-sub span:nth-child(2) {
+	text-decoration: line-through;
+} */
+
+.main-sub span:nth-child(2) {
+	position: absolute;
+	right: 0.625rem;
+	bottom: 0.125rem;
+}
+
+/* 历史记录 */
+
+.back {
+	background: rgba(0,0,0,0.6);
+	display: none;
+}
+
+.record {
+	display: none;
+	bottom: auto;
+	top: ;
+	background: #fff;
+	max-height: 15rem;
+	overflow: auto;
+}
+
+.record li {
+	padding: 0 .75rem;
+	line-height: 2.5rem;
+	border-bottom: 0.0625rem solid #eee;
+}

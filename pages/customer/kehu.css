@@ -1,0 +1,77 @@
+.mui-bar {
+	background: #fff;
+	height: 3rem;
+	position: fixed;
+	z-index: 9;
+	top: 0;
+	width: 100%;
+	text-align: center;
+	line-height: 3rem;
+	border-bottom: 0.0625rem solid #eee;
+}
+
+.mui-bar img {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 3rem;
+	width: 3rem;
+	padding: 1rem 1.25rem;
+	box-sizing: border-box;
+}
+
+.content {
+	position: absolute;
+	width: 100%;
+	top: 3rem;
+	bottom: 0;
+	overflow: auto;
+}
+
+.list {
+	line-height: 3rem;
+	padding: 0 0.5rem;
+	border-bottom: 0.0625rem solid #eee;
+	font-size: 0.75rem;
+	display: flex;
+}
+
+.list div {
+	flex: 1;
+	display: flex;
+}
+
+.list div span:nth-of-type(1) {
+	margin-right: 0.5rem;
+	font-weight: 600;
+}
+
+.list div span:nth-of-type(2) {
+	flex: 1;
+}
+
+.list input {
+	width: 95%;
+	outline: none;
+	border: 0;
+	font-size: 0.75rem;
+}
+
+.list_but {
+	margin: 2rem auto 0;
+	height: 3rem;
+	width: 90%;
+	border-radius: 1.5rem;
+	background: #FD7718;
+	text-align: center;
+	line-height: 3rem;
+	color: #fff;
+	font-size: 1.125rem;
+	font-weight: 600;
+}
+
+
+
+
+
+

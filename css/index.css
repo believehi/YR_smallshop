@@ -1,0 +1,105 @@
+.mui-bar-tab {
+	position: fixed;
+	z-index: 999;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 50px;
+	display: flex;
+	justify-content: space-around;
+	font-size: 0.625rem;
+	border-top: 0.0625rem solid #eee;
+}
+
+.mui-tab-item {
+	flex: 1;
+	text-decoration: none;
+	text-align: center;
+	color: #333;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+}
+
+.mui-tab-item {
+	-webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+	-webkit-user-select: none;
+	-moz-user-focus: none;
+	-moz-user-select: none;
+}
+
+.mui-tab-num {
+	display: none;
+	position: absolute;
+	top: 0.25rem;
+	right: 50%;
+	transform: translateX(150%);
+	background: #FD7718;
+	color: #fff;
+	border-radius: 50%;
+	width: 0.875rem;
+	height: 0.875rem;
+	line-height: 1rem;
+	text-align: center;
+}
+
+.mui-active {
+	color: #FD7718;
+}
+
+.mui-icon {
+	width: 1.25rem;
+	height: 1.25rem;
+	background-size: 100% 100%;
+	margin-bottom: 0.3125rem;
+}
+
+.mui-icon-home {
+	background-image: url(../img/tab_01.png);
+}
+
+.mui-icon-sorts {
+	background-image: url(../img/tab_02.png);
+}
+
+.mui-icon-shopping {
+	background-image: url(../img/tab_03.png);
+}
+
+.mui-icon-my {
+	background-image: url(../img/tab_04.png);
+}
+
+.mui-icon-th {
+	background-image: url(../img/tab_10.png);
+}
+
+.mui-active .mui-icon-home {
+	background-image: url(../img/tab_05.png);
+}
+
+.mui-active .mui-icon-sorts {
+	background-image: url(../img/tab_06.png);
+}
+
+.mui-active .mui-icon-shopping {
+	background-image: url(../img/tab_07.png);
+}
+
+.mui-active .mui-icon-my {
+	background-image: url(../img/tab_08.png);
+}
+
+.mui-active .mui-icon-th {
+	background-image: url(../img/tab_09.png);
+}
+
+
+
+
+
+
+
+

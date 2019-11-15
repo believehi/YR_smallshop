@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>退货购物车</title>
+		<link href="../../css/public.css" rel="stylesheet" />
+		<link href="shopping.css" rel="stylesheet" />
+		
+	</head>
+	<body>
+		<!-- 头像 -->
+		<div class="title">
+			<b>退货订单</b>
+			<b id="edit">编辑</b>
+		</div>
+		<!-- 选择客户 -->
+		<div class="kehu">
+			<div id="choice">选择退货客户</div>
+		</div>
+		<!-- 列表 -->
+		<ul class="content" id="content">
+			
+		</ul>
+		<!-- 底部 -->
+		<div class="footer">
+			<div class="ft-xz">
+				<input type="checkbox" name="checkbox" id="input_out" value="" />
+				<span>全选</span>
+				<span>总计：</span>
+				<b id="total">￥0</b>
+			</div>
+			<div class="ft-js" id="settlement">退&emsp;货</div>
+		</div>
+
+		<script src="../../js/mui.min.js"></script>
+		<script src="../../js/jquery.js"></script>
+		<script src="../../js/app.js"></script>
+		<script type="text/javascript" charset="utf-8">
+			(function() {
+				mui.init();
+				var w, ws, userinfo, baseinfo, money = 0, op_num = 0, itemArr = [];
+				var itemBar = {}; //接收客户信息
+				mui.plusReady(function() {
+					ws = plus.webview.currentWebview();
+					ws.setStyle(YiRu.viewstyle());
+					userinfo = JSON.parse(localStorage.getItem('$sh_userinfo'));
+					YiRu.isUserinfo(userinfo);
+					// YiRu.UserLogin();
+					
+					if(JSON.stringify(userinfo) == "{}" || userinfo == null) return
+					
+					// 获取购物车列表
+					function stopCar() {
+						YiRu.getajax('order/carlist', function(data) {
+							baseinfo = data.data.baseinfo;
+							// console.log(JSON.stringify(baseinfo));
+							if (data.code == 200) {
+								var str = '',
+									len = baseinfo.length;
+								if(len == 0) {
+									str = '<p style="line-height: 4rem; color: #888; text-align: center; font-size: .875rem;">暂无的商品</p>'
+									$("#content").html(str);
+									return;
+								}
+								for (var i = 0; i < len; i ++) {
+									str += '<li>' +
+													'<div class="list-input">' +
+														'<input type="checkbox" id="" name="checkbox_name" value="" data-id="' + baseinfo[i].shopid + '"' + 
+															'data-money="'+ (+baseinfo[i].price_sale).toFixed(2) +'"  index_no="' + baseinfo[i].index_no + '" num_pack="' + parseInt(baseinfo[i].num_pack) + '"/>' +
+													'</div>' +
+													'<div class="list-img" shopid="' + baseinfo[i].shopid + '">' +
+														'<img src="' + (baseinfo[i].path_local || "../../img/default.png") + '">' +
+													'</div>' +
+													'<div class="main">' +
+														'<div class="main-title">' + baseinfo[i].name_full + '</div>' +
+														'<div class="main-content">' +
+															'<span>规格：' + baseinfo[i].standards + '</span>' +
+															'<span>单位：' + baseinfo[i].unit_sale + '</span>' +
+															'<span>计量：' + baseinfo[i].flag_wp + '</span>' +
+														'</div>' +
+														'<div class="main-content">' +
+															'<span>最大包装：' + parseInt(baseinfo[i].num_box) + '</span>' +
+															'<span>最小不可拆包装数：' + parseInt(baseinfo[i].num_pack) + '</span>' +
+														'</div>' +
+														'<div class="main-sub">' +
+															'<span>￥' + (+baseinfo[i].price_sale).toFixed(2) + '</span>&ensp;' + 
+															'<span> 库存 ' + parseInt(baseinfo[i].num) + ' ' + baseinfo[i].unit_sale +'</span>' +
+															'<div class="but-row">' +
+																'<b class="mui-duc" index_no="' + baseinfo[i].index_no + '">-</b>' +
+																'<b class="mui-num" id="money_' + baseinfo[i].shopid + '">' + parseInt(baseinfo[i].num_order) + '</b>' +
+																'<b class="mui-add" index_no="' + baseinfo[i].index_no + '">+</b>' +
+															'</div>' +
+														'</div>' +
+													'</div>' +
+												'</li>';
+								}
+								if(len > 4) str += '<p style="line-height: 2.5rem; color: #888; text-align: center; font-size: .875rem; background: #eee;">我是有底线的！</p>';
+								$("#content").html(str);
+								$("#input_out").removeAttr('checked')
+								$("#total").html("￥0");
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							drpid: userinfo.companyId,
+							userid: userinfo.userId,
+							flag_rtn: '0',
+							page: 1,
+							num: 10000
+						}, w, 'post');
+					}
+					stopCar()
+
+					// 跳珠到商品详情
+					mui('body').on('tap', '.list-img', function() {
+						YiRu.openVW("/pages/product/product.html", {shopid: $(this).attr("shopid")});
+					})
+					
+					// 数量减少
+					$("body").on("tap", ".mui-duc", function() {
+						var num = +$(this).next().text(),
+							type = 1;
+						if (num > 1) {
+							num--;
+							$(this).next().html(num);
+						} else {
+							$(this).parent('li').hide()
+							mui.toast("商品数量至少为1！");
+							return;
+						}
+						changeCar($(this).attr("index_no"), type, num)
+						myTotal()
+					})
+
+					// 数量增加
+					$("body").on("tap", ".mui-add", function() {
+						var num = +$(this).prev().text();
+						num++;
+						$(this).prev().html(num)
+						changeCar($(this).attr("index_no"), 1, num)
+						myTotal()
+					})
+
+					// 购物车数量增加，减少请求
+					function changeCar(index_no, typeNum, nNum) {
+						// w = plus.nativeUI.showWaiting('', YiRu.WaitingStyle());
+						YiRu.getajax('order/editecar', function(data) {
+							// console.log(JSON.stringify(data));
+							if (data.code == 200) {
+								
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							index_no: index_no,
+							type: typeNum,
+							quantity: nNum
+						}, w, 'post');
+					}
+					
+					// 计算总价
+					function myTotal(){
+						money = 0;
+						op_num = 0;
+						$("input[name=checkbox_name]").each(function(){
+							// console.log($(this).is(":checked"))
+							if ($(this).is(":checked")) {
+								var minMo = $("#money_" + this.getAttribute("data-id")).html() * $(this).attr("data-money"); 
+								money += minMo;
+								op_num ++;
+							// console.log($("#money_" + this.getAttribute("data-id")).html())
+							// console.log($(this).attr("data-money"))
+							// console.log(minMo)
+							// console.log(money)
+							}
+							$("#total").html("￥" + money.toFixed(2))
+						})
+					}
+					
+					// 单选
+					$('body').on('change', 'input[name=checkbox_name]', function() {
+						myTotal()
+					})
+				
+					// 全选购物车
+					$("body").on("change", "#input_out", function() {
+						var isCheck = $("#input_out").is(':checked'); //获得全选复选框是否选中
+						$("input[type='checkbox']").each(function() {
+							this.checked = isCheck; //循环赋值给每个复选框是否选中
+						});
+						myTotal()
+					})
+
+					// 删除商品 结算 切换
+					var bh_edit = true;
+					$("body").on("tap", "#edit", function() {
+						if (bh_edit) {
+							bh_edit = false;
+							$("#edit").html("完成")
+							$("#settlement").html("移除商品")
+							$("#settlement").css({"background": "#aaa"})
+						} else {
+							bh_edit = true;
+							$("#edit").html("编辑")
+							$("#settlement").html("退&emsp;货")
+							$("#settlement").css({"background": "#FD7718"})
+						}
+					})
+						
+						
+					//删除商品 结算
+					$("body").on("tap", "#settlement", function() {
+						var bh_aa = true,
+							bh_bb = true;
+						itemArr = [];
+						if (!bh_edit) {
+							// 删除商品
+							$("input[name=checkbox_name]").each(function(){
+								if ($(this).is(":checked")) {
+									bh_aa = false;
+									changeCar($(this).attr("index_no"), 2, $("#money_" + this.getAttribute("data-id")).html())
+								}
+								setTimeout(function(){
+									if(bh_aa) mui.toast("请选择移除的商品！")
+								}, 50)
+								setTimeout(function() {
+									stopCar();
+									$("#input_out").removeAttr('checked')
+									$("#total").html("￥0");
+								}, 100)
+							})
+						} else{
+							// 结算
+							// console.log(itemBar.custid)
+							// return;
+							if (!itemBar.custid) {
+								mui.toast("请选择下单客户！")
+								return
+							}
+							$("input[name=checkbox_name]").each(function(){
+								if ($(this).is(":checked")) {
+									bh_bb = false;
+									itemArr.push({
+										drpid: userinfo.companyId,
+										custid: itemBar.custid || '',
+										shopid: this.getAttribute("data-id"),
+										value_ask: this.getAttribute("data-money"),
+										num_order_min: 1,
+										num_hear: $("#money_" + this.getAttribute("data-id")).text(),
+										value_order: this.getAttribute("data-money"),
+										num_ask: this.getAttribute("num_pack"),
+										price_hear: 0,
+										price_ws: this.getAttribute("data-money")
+									})
+									
+									
+								};
+								setTimeout(function(){
+									if(bh_bb) mui.toast("请选择结算的商品！")
+								}, 100)
+							})
+							// console.log(JSON.stringify(itemArr))
+							if(!bh_bb) {
+								mui.confirm('确定将选中的商品退货！', '', ['确定退货', '我再想想'], function(e) {
+									if (e.index == 0) {
+										editlist()
+									}
+								})
+							}
+						}
+					})
+					
+					// 下单商品
+					function editlist() {
+						// console.log(userinfo.companyId)
+						// console.log(money)
+						// console.log(op_num)
+						// console.log(JSON.stringify(itemArr))
+						w = plus.nativeUI.showWaiting('', YiRu.WaitingStyle());
+						YiRu.getajax('order/boxreturn', function(data) {
+							// console.log(JSON.stringify(data));
+							if (data.code == 200) {
+								$("input").removeAttr('checked')
+								$("#total").html("￥0");
+								stopCar()
+								mui.toast('选中的商品已退货！')
+							} else {
+								plus.nativeUI.toast(data.info);
+							}
+						}, {
+							drpid: userinfo.companyId,
+							value: money,
+							custid: itemBar.custid || '',
+							mktid: itemBar.mktid || '',
+							num_shop: op_num,
+							deptid: '',
+							oderItem: itemArr
+						}, w, 'post');
+					}
+					
+					// 选择客户
+					$("body").on("tap", "#choice", function() {
+						YiRu.openVW("/pages/shopping/choice.html")
+					})
+					
+					
+					// 刷新页面自定义事件
+					window.addEventListener('refresh', function(e) {
+						stopCar()
+					})
+					
+					// 接收客户信息
+					window.addEventListener('doit', function(e) {
+						itemBar = e.detail.aaa;
+						// console.log(JSON.stringify(itemBar))
+						$("#choice").html(itemBar.name_full)
+					})
+				
+				})
+			}())
+		</script>
+	</body>
+</html>
